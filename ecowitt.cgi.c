@@ -41,6 +41,14 @@ int cgiMain()
 	{
 		
 
+		// send to mqtt
+		NetworkInit(&n);
+		
+	rc  = NetworkConnect(&n,MQTTHOST,MQTTPORT);
+		if (rc!=0)
+		{
+			fprintf(cgiOut,"Network Connect Failed\r\n");
+		}
 		MQTTClientInit(&c,&n,1000,mqtt_buffer,100,mqtt_readBuffer,100);
 		MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
 		data.willFlag = 0;
@@ -102,14 +110,6 @@ int cgiMain()
 	cgiHeaderContentType("text/html");
 
 
-		// send to mqtt
-		NetworkInit(&n);
-		
-	rc  = NetworkConnect(&n,MQTTHOST,MQTTPORT);
-		if (rc!=0)
-		{
-			fprintf(cgiOut,"Network Connect Failed\r\n");
-		}
 
 
 		msg.payload = &TempData.InteriorHumidity;
