@@ -70,24 +70,44 @@ int cgiMain()
 		TempData.DataTime = time(NULL);
 		cgiFormDoubleBounded( "tempinf", &TempData.InteriorTemp, -40, 160, 69.420);
 		msg.payload = &TempData.InteriorTemp;
-		MQTTPublish(&c, "/ecowitt/tempin", &msg);
+		rc=MQTTPublish(&c, "/ecowitt/tempin", &msg);
+		if (rc!=0)
+		{
+			fprintf(cgiOut,"%s Published Failed: %d\r\n","tempin",rc);
+		}
 		
 		
         cgiFormDoubleBounded( "humidityin", &TempData.InteriorHumidity,0,100,50 );
 		msg.payload = &TempData.InteriorHumidity;
-		MQTTPublish(&c, "/ecowitt/humidityin", &msg);
+		rc=MQTTPublish(&c, "/ecowitt/humidityin", &msg);
+		if (rc!=0)
+		{
+			fprintf(cgiOut,"%s Published Failed: %d\r\n","humidityin",rc);
+		}
 		
 		cgiFormDouble( "baromrelin",&TempData.Pressure,0);
 		msg.payload = &TempData.Pressure;
-		MQTTPublish(&c, "/ecowitt/pressure", &msg);
+		rc=MQTTPublish(&c, "/ecowitt/pressure", &msg);
+		if (rc!=0)
+		{
+			fprintf(cgiOut,"%s Published Failed: %d\r\n","pressure",rc);
+		}
 		
 		cgiFormDoubleBounded( "tempf", &TempData.ExteriorTemp,-40, 160, 69.420 );
 		msg.payload = &TempData.ExteriorTemp;
-		MQTTPublish(&c, "/ecowitt/tempout", &msg);
+		rc=MQTTPublish(&c, "/ecowitt/tempout", &msg);
+		if (rc!=0)
+		{
+			fprintf(cgiOut,"%s Published Failed: %d\r\n","tempout",rc);
+		}
 		
 		cgiFormDouble( "humidity", &TempData.ExteriorHumidity,0 );
 		msg.payload = &TempData.ExteriorHumidity;
-		MQTTPublish(&c, "/ecowitt/humidityout", &msg);
+		rc=MQTTPublish(&c, "/ecowitt/humidityout", &msg);
+		if (rc!=0)
+		{
+			fprintf(cgiOut,"%s Published Failed: %d\r\n","humidityout",rc);
+		}
 		// lazy loop to avoid copy/paste
 		for (int i=0;i<8;i++)
 		{
@@ -101,9 +121,17 @@ int cgiMain()
 			sprintf(humidity,"/ecowitt/humidity%d",i+1);
 			
 			msg.payload = &TempData.SensorTemp[i];
-			MQTTPublish(&c, tempf, &msg);
+			rc=MQTTPublish(&c, tempf, &msg);
+			if (rc!=0)
+			{
+				fprintf(cgiOut,"%s Published Failed: %d\r\n",tempf,rc);
+			}
 			msg.payload = &TempData.SensorHumidity[i];
-			MQTTPublish(&c, humidity, &msg);
+			rc=MQTTPublish(&c, humidity, &msg);
+			if (rc!=0)
+			{
+				fprintf(cgiOut,"%s Published Failed: %d\r\n",humidity,rc);
+			}	
 		}
 	cgiHeaderContentType("text/html");
 		MQTTDisconnect(&c);
