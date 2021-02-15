@@ -37,10 +37,8 @@ int cgiMain()
 	char mqtt_buffer[100],mqtt_readBuffer[100];
 	int rc=0;	
 
-	if (strncmp(cgiRequestMethod,"POST",4)==0)
+	//if (strncmp(cgiRequestMethod,"POST",4)==0)
 	{
-		
-
 		// send to mqtt
 		NetworkInit(&n);
 		
@@ -132,11 +130,6 @@ int cgiMain()
 	fprintf(cgiOut, "</BODY></HTML>\n");
 	
 	}
-	else
-	{
-fprintf(stderr,"Access was a GET");
-	cgiHeaderContentType("text/html");
-	fprintf(cgiOut, "<HTML><HEAD>\n<TITLE>cgic test</TITLE></HEAD>\n<BODY><H1>YOU FUCKED UP</H1>\n</BODY></HTML>\n");
-	}
+
 	return 0;
 }
