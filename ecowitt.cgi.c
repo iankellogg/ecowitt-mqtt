@@ -37,36 +37,9 @@ int cgiMain()
 	char mqtt_buffer[100],mqtt_readBuffer[100];
 	int rc=0;	
 
-//	if (strncmp(cgiRequestMethod,"POST",4)==0)
+	if (strncmp(cgiRequestMethod,"POST",4)==0)
 	{
-		TempData.DataTime = time(NULL);
-		cgiFormDoubleBounded( "tempinf", &TempData.InteriorTemp, -40, 160, 69.420);
-        cgiFormDoubleBounded( "humidityin", &TempData.InteriorHumidity,0,100,50 );
-		cgiFormDouble( "baromrelin",&TempData.Pressure,0);
-		cgiFormDoubleBounded( "tempf", &TempData.ExteriorTemp,-40, 160, 69.420 );
-		cgiFormDouble( "humidity", &TempData.ExteriorHumidity,0 );
-		// lazy loop to avoid copy/paste
-		for (int i=0;i<8;i++)
-		{
-			char tempf[8],humidity[10];
-			sprintf(tempf,"temp%df",i+1);
-			sprintf(humidity,"humidity%df",i+1);
-			cgiFormDoubleBounded( tempf, &TempData.SensorTemp[i], -40, 160, 69.420 );
-			cgiFormDouble( humidity, &TempData.SensorHumidity[i],0 );
-		}
-	cgiHeaderContentType("text/html");
-
-
-		// send to mqtt
-		NetworkInit(&n);
 		
-	rc  = NetworkConnect(&n,MQTTHOST,MQTTPORT);
-		if (rc!=0)
-		{
-			fprintf(cgiOut,"Network Connect Failed\r\n");
-		}
-
-
 
 		MQTTClientInit(&c,&n,1000,mqtt_buffer,100,mqtt_readBuffer,100);
 		MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
@@ -83,18 +56,68 @@ int cgiMain()
 			fprintf(cgiOut,"MQTT Connect Failed: %d\r\n",rc);
 		}
 		MQTTMessage msg;
-	//	char tmp[20];
-	//	sprintf(tmp,"%f",TempData.InteriorTemp);
-		msg.payload = &TempData.InteriorTemp;
 		msg.payloadlen = sizeof(double);
 		msg.qos = MQTTQOS;
 		msg.retained = 0;
-	
-	rc  =	MQTTPublish(&c, "/ecowitt/tempin", &msg);
+		
+		
+		TempData.DataTime = time(NULL);
+		cgiFormDoubleBounded( "tempinf", &TempData.InteriorTemp, -40, 160, 69.420);
+		msg.payload = &TempData.InteriorTemp;
+		MQTTPublish(&c, "/ecowitt/tempin", &msg);
+		
+		
+        cgiFormDoubleBounded( "humidityin", &TempData.InteriorHumidity,0,100,50 );
+		msg.payload = &TempData.InteriorHumidity;
+		MQTTPublish(&c, "/ecowitt/humidityin", &msg);
+		
+		cgiFormDouble( "baromrelin",&TempData.Pressure,0);
+		msg.payload = &TempData.Pressure;
+		MQTTPublish(&c, "/ecowitt/pressure", &msg);
+		
+		cgiFormDoubleBounded( "tempf", &TempData.ExteriorTemp,-40, 160, 69.420 );
+		msg.payload = &TempData.ExteriorTemp;
+		MQTTPublish(&c, "/ecowitt/tempout", &msg);
+		
+		cgiFormDouble( "humidity", &TempData.ExteriorHumidity,0 );
+		msg.payload = &TempData.ExteriorHumidity;
+		MQTTPublish(&c, "/ecowitt/humidityout", &msg);
+		// lazy loop to avoid copy/paste
+		for (int i=0;i<8;i++)
+		{
+			char tempf[30],humidity[30];
+			sprintf(tempf,"temp%df",i+1);
+			sprintf(humidity,"humidity%df",i+1);
+			cgiFormDoubleBounded( tempf, &TempData.SensorTemp[i], -40, 160, 69.420 );
+			cgiFormDouble( humidity, &TempData.SensorHumidity[i],0 );
+			
+			sprintf(tempf,"/ecowitt/temp%d",i+1);
+			sprintf(humidity,"/ecowitt/humidity%d",i+1);
+			
+			msg.payload = &TempData.SensorTemp[i];
+			MQTTPublish(&c, tempf, &msg);
+			msg.payload = &TempData.SensorHumidity[i];
+			MQTTPublish(&c, humidity, &msg);
+		}
+	cgiHeaderContentType("text/html");
+
+
+		// send to mqtt
+		NetworkInit(&n);
+		
+	rc  = NetworkConnect(&n,MQTTHOST,MQTTPORT);
 		if (rc!=0)
 		{
-		fprintf(cgiOut,"Published Failed  %d\r\n",rc);
+			fprintf(cgiOut,"Network Connect Failed\r\n");
 		}
+
+
+		msg.payload = &TempData.InteriorHumidity;
+	rc =MQTTPublish(&c, "/ecowitt/humidityin", &msg);
+		msg.payload = &TempData.InteriorHumidity;
+	rc =MQTTPublish(&c, "/ecowitt/humidityin", &msg);
+		msg.payload = &TempData.InteriorHumidity;
+	rc =MQTTPublish(&c, "/ecowitt/humidityin", &msg);
 		MQTTDisconnect(&c);
 		NetworkDisconnect(&n);
 	/* Send the content type, letting the browser know this is HTML */
@@ -109,11 +132,11 @@ int cgiMain()
 	fprintf(cgiOut, "</BODY></HTML>\n");
 	
 	}
-	/*else
+	else
 	{
 fprintf(stderr,"Access was a GET");
 	cgiHeaderContentType("text/html");
 	fprintf(cgiOut, "<HTML><HEAD>\n<TITLE>cgic test</TITLE></HEAD>\n<BODY><H1>YOU FUCKED UP</H1>\n</BODY></HTML>\n");
-	}*/
+	}
 	return 0;
 }
