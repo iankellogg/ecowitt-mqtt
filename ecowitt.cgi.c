@@ -106,16 +106,6 @@ int cgiMain()
 			MQTTPublish(&c, humidity, &msg);
 		}
 	cgiHeaderContentType("text/html");
-
-
-
-
-		msg.payload = &TempData.InteriorHumidity;
-	rc =MQTTPublish(&c, "/ecowitt/humidityin", &msg);
-		msg.payload = &TempData.InteriorHumidity;
-	rc =MQTTPublish(&c, "/ecowitt/humidityin", &msg);
-		msg.payload = &TempData.InteriorHumidity;
-	rc =MQTTPublish(&c, "/ecowitt/humidityin", &msg);
 		MQTTDisconnect(&c);
 		NetworkDisconnect(&n);
 	/* Send the content type, letting the browser know this is HTML */
